@@ -44,6 +44,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh_priv("~");
 
   RobotLocalization::RosEkf ekf(nh, nh_priv);
+  ROS_INFO("Initializing local robot_localization node!");
   ekf.initialize();
   ros::spin();
 

@@ -40,6 +40,8 @@
 #include <set>
 #include <queue>
 
+#include <ros/ros.h>
+
 namespace RobotLocalization
 {
 

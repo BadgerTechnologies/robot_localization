@@ -60,6 +60,18 @@ namespace RobotLocalization
              "Measurement is:\n" << measurement.measurement_ << "\n"
              "Measurement topic name is:\n" << measurement.topicName_ << "\n\n"
              "Measurement covariance is:\n" << measurement.covariance_ << "\n");
+    bool isOdom = false;
+    if (measurement.topicName_.substr(0, 4) == "odom")
+    {
+      isOdom = true;
+    }
+    if (isOdom)
+      ROS_INFO_STREAM("---------------------- Ekf::correct ----------------------\n" <<
+                      "State is:\n" << state_ << "\n"
+                      "Topic is:\n" << measurement.topicName_ << "\n"
+                      "Measurement is:\n" << measurement.measurement_ << "\n"
+                      "Measurement topic name is:\n" << measurement.topicName_ << "\n"
+                      "Update vector is:\n" << measurement.updateVector_ << "\n");
 
     // We don't want to update everything, so we need to build matrices that only update
     // the measured parts of our state vector. Throughout prediction and correction, we
@@ -88,6 +100,8 @@ namespace RobotLocalization
     }
 
     FB_DEBUG("Update indices are:\n" << updateIndices << "\n");
+    if (isOdom)
+      ROS_INFO_STREAM("Update indices are:\n" << updateIndices << "\n");
 
     size_t updateSize = updateIndices.size();
 
@@ -144,6 +158,13 @@ namespace RobotLocalization
       }
     }
 
+    if (isOdom)
+    {
+      ROS_INFO("\nz r p dx dy dz dr dp dw az");
+      ROS_INFO_STREAM("Measurement subset:\n" << measurementSubset);
+      ROS_INFO_STREAM("State subset:\n" << stateSubset);
+    }
+
     // The state-to-measurement function, h, will now be a measurement_size x full_state_size
     // matrix, with ones in the (i, i) locations of the values to be updated
     for (size_t i = 0; i < updateSize; ++i)
@@ -156,12 +177,26 @@ namespace RobotLocalization
              "\nMeasurement covariance subset is:\n" << measurementCovarianceSubset <<
              "\nState-to-measurement subset is:\n" << stateToMeasurementSubset << "\n");
 
+    if (isOdom)
+    {
+      ROS_INFO_STREAM("Current state subset is:\n" << stateSubset <<
+                      "\nMeasurement subset is:\n" << measurementSubset <<
+                      //"\nMeasurement covariance subset is:\n" << measurementCovarianceSubset <<
+                      //"\nState-to-measurement subset is:\n" << stateToMeasurementSubset <<
+                      "\n");
+    }
+
     // (1) Compute the Kalman gain: K = (PH') / (HPH' + R)
     Eigen::MatrixXd pht = estimateErrorCovariance_ * stateToMeasurementSubset.transpose();
     Eigen::MatrixXd hphrInv  = (stateToMeasurementSubset * pht + measurementCovarianceSubset).inverse();
     kalmanGainSubset.noalias() = pht * hphrInv;
 
     innovationSubset = (measurementSubset - stateSubset);
+    if (isOdom)
+    {
+      //ROS_INFO_STREAM("Kalman gain subset:\n" << kalmanGainSubset);
+      ROS_INFO_STREAM("Innovation subset before wrap:\n" << innovationSubset);
+    }
 
     // Wrap angles in the innovation
     for (size_t i = 0; i < updateSize; ++i)
@@ -180,6 +215,12 @@ namespace RobotLocalization
           innovationSubset(i) -= TAU;
         }
       }
+    }
+
+    if (isOdom)
+    {
+      ROS_INFO_STREAM("Innovation subset after wrap:\n" << innovationSubset);
+      ROS_INFO_STREAM("Mahalanobis Threshold: " << measurement.mahalanobisThresh_);
     }
 
     // (2) Check Mahalanobis distance between mapped measurement and state.
@@ -204,7 +245,23 @@ namespace RobotLocalization
                "\nCorrected full state is:\n" << state_ <<
                "\nCorrected full estimate error covariance is:\n" << estimateErrorCovariance_ <<
                "\n\n---------------------- /Ekf::correct ----------------------\n");
+      if (isOdom)
+      {
+        ROS_INFO_STREAM(//"Kalman gain subset is:\n" << kalmanGainSubset << "\n"
+                        "Innovation is:\n" << innovationSubset << "\n"
+                        "Corrected full state is:\n" << state_ << "\n"
+                        //"Corrected full estimate error covariance is:\n" << estimateErrorCovariance_ << "\n"
+                        "\n---------------------- /Ekf::correct ----------------------\n");
+      }
     }
+    else
+    {
+      if (isOdom)
+      {
+        ROS_INFO("Did not pass Mahalanobis threshold");
+      }
+    }
+    //ROS_INFO_STREAM("Correction after:\n" << state_);
   }
 
   void Ekf::predict(const double referenceTime, const double delta)

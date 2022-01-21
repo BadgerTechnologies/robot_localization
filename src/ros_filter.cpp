@@ -46,6 +46,8 @@
 #include <vector>
 #include <limits>
 
+#include <tf/transform_datatypes.h>
+
 #if defined(_WIN32) && defined(ERROR)
   #undef ERROR
 #endif
@@ -1728,6 +1730,7 @@ namespace RobotLocalization
                     false);
       RF_DEBUG("Received message that preceded the most recent pose reset. Ignoring...");
 
+      ROS_INFO("Robot localization received odometry message that precedes the most recent pose reset. Ignoring...");
       return;
     }
 
@@ -2181,6 +2184,7 @@ namespace RobotLocalization
     }
     else
     {
+      ROS_INFO("Ignoring twist message, bad timestamp!");
       std::stringstream stream;
       stream << "The " << topicName << " message has a timestamp before that of the previous message received," <<
                 " this message will be ignored. This may indicate a bad timestamp. (message time: " <<
