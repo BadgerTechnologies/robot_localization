@@ -39,6 +39,7 @@
 #include <limits>
 #include <sstream>
 #include <vector>
+#include <ros/ros.h>
 
 
 namespace RobotLocalization
@@ -187,6 +188,17 @@ namespace RobotLocalization
     {
       // (3) Apply the gain to the difference between the state and measurement: x = x + K(z - Hx)
       state_.noalias() += kalmanGainSubset * innovationSubset;
+
+      // If odometry date says we are not moving forward, set the state Vx to 0.
+      if (measurement.updateVector_[StateMemberVx] and
+          measurement.measurement_[StateMemberVx] == 0.0 and
+          state_[StateMemberVx] > 1e-6)
+      {
+        ROS_WARN_STREAM("Odometry measurement Vx is 0 but ekf state Vx is " << state_[StateMemberVx] << ". "
+                        "Setting ekf states Vx and Ax to 0.");
+        state_[StateMemberVx] = 0.0;
+        state_[StateMemberAx] = 0.0;
+      }
 
       // (4) Update the estimate error covariance using the Joseph form: (I - KH)P(I - KH)' + KRK'
       Eigen::MatrixXd gainResidual = identity_;
