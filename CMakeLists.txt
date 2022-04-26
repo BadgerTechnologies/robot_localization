@@ -52,7 +52,9 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 
 if(NOT MSVC)
-  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Werror")
+#  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Werror")
+# When AVX is enabled, -Werror fails in Eigen. Allow unused as a warning again
+  set_directory_properties(PROPERTIES COMPILE_OPTIONS "-Wall;-Werror;-Wno-error=unused-variable")
 endif()
 add_definitions(-DEIGEN_NO_DEBUG -DEIGEN_MPL2_ONLY)
 
