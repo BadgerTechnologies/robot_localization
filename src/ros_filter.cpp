@@ -1086,8 +1086,12 @@ namespace RobotLocalization
         std::vector<int> updateVec = loadUpdateConfig(odomTopicName);
         std::vector<int> poseUpdateVec = updateVec;
         std::fill(poseUpdateVec.begin() + POSITION_V_OFFSET, poseUpdateVec.begin() + POSITION_V_OFFSET + TWIST_SIZE, 0);
+        std::fill(poseUpdateVec.begin() + POSITION_A_OFFSET,
+                  poseUpdateVec.begin() + POSITION_A_OFFSET + ACCELERATION_SIZE,
+                  0);
         std::vector<int> twistUpdateVec = updateVec;
         std::fill(twistUpdateVec.begin() + POSITION_OFFSET, twistUpdateVec.begin() + POSITION_OFFSET + POSE_SIZE, 0);
+        std::fill(twistUpdateVec.begin() + POSITION_A_OFFSET, twistUpdateVec.begin() + POSITION_A_OFFSET + ACCELERATION_SIZE, 0);
 
         int poseUpdateSum = std::accumulate(poseUpdateVec.begin(), poseUpdateVec.end(), 0);
         int twistUpdateSum = std::accumulate(twistUpdateVec.begin(), twistUpdateVec.end(), 0);
@@ -1291,6 +1295,9 @@ namespace RobotLocalization
         // Pull in the sensor's config, zero out values that are invalid for the twist type
         std::vector<int> twistUpdateVec = loadUpdateConfig(twistTopicName);
         std::fill(twistUpdateVec.begin() + POSITION_OFFSET, twistUpdateVec.begin() + POSITION_OFFSET + POSE_SIZE, 0);
+        std::fill(twistUpdateVec.begin() + POSITION_A_OFFSET,
+                  twistUpdateVec.begin() + POSITION_A_OFFSET + ACCELERATION_SIZE,
+                  0);
 
         int twistUpdateSum = std::accumulate(twistUpdateVec.begin(), twistUpdateVec.end(), 0);
 
