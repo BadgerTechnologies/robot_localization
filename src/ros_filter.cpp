@@ -2042,7 +2042,7 @@ namespace RobotLocalization
   {
     RF_DEBUG("------ RosFilter::setPoseCallback ------\nPose message:\n" << *msg);
 
-    ROS_INFO_STREAM("Received set_pose request with value\n" << *msg);
+    ROS_DEBUG_STREAM("Received set_pose request with value\n" << *msg);
 
     std::string topicName("setPose");
 
