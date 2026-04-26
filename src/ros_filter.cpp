@@ -1015,13 +1015,13 @@ namespace RobotLocalization
              "\nsuppress tf warnings is " << std::boolalpha << tfSilentFailure_ << "\n" "\n");
 
     // Create a subscriber for manually setting/resetting pose
-    setPoseSub_ = nh_.subscribe("set_pose",
+    setPoseSub_ = nhLocal_.subscribe("set_pose",
                                 1,
                                 &RosFilter<T>::setPoseCallback,
                                 this, ros::TransportHints().tcpNoDelay(false));
 
     // Create a service for manually setting/resetting pose
-    setPoseSrv_ = nh_.advertiseService("set_pose", &RosFilter<T>::setPoseSrvCallback, this);
+    setPoseSrv_ = nhLocal_.advertiseService("set_pose", &RosFilter<T>::setPoseSrvCallback, this);
 
     // Create a service for manually enabling the filter
     enableFilterSrv_ = nhLocal_.advertiseService("enable", &RosFilter<T>::enableFilterSrvCallback, this);
